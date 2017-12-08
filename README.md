@@ -4,11 +4,11 @@
 
 ## 说明
 
-一个简单的数值计算的库，封装了系统的`NSDecimalNumber`，方便数值计算，避免精度的丢失。
+一个简单、方便的数值计算库，封装了系统的`NSDecimalNumber`，方便数值计算与扩展，避免精度的丢失。
 
 ## 使用
 
-`pod 'Number', :git => 'https://github.com/JyHu/Number.git'`
+直接使用`cocoapods`添加引用： `pod 'Number'`
 
 使用的时候可以直接对`NSString`、`NSNumber`、`NSDecimalNumber`类型的数做数值的加减乘除等运算。
 
@@ -99,7 +99,7 @@ NSLog(@"res %@   resStr %@", res.stringValue, resStr);
 
 ## 扩展
 
-为了做到各种类型(继承了`NSObject`根类的)的数据都能直接进行计算，这里在`AUUNumberHandlerProtocol`里声明了一系列的操作方法，只需要实现这个协议里的方法即可。
+为了做到各种类型(继承了`NSObject`根类的)的数据都能直接进行计算，这里在`AUUNumberHandlerProtocol`里声明了一系列的操作方法，只需要实现这个协议里的方法即可，可以看一下测试项目里的`AUUDecimalNumber`这个测试类。
 
 在前面所说的三种类型`NSString`、`NSNumber`、`NSDecimalNumber`即是已经实现了这些协议方法，你导入了这个库后即可直接使用。
 
