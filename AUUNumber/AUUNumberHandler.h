@@ -9,6 +9,14 @@
 #import <Foundation/Foundation.h>
 #import "AUUNumberHandlerProtocol.h"
 
+/**
+ 在数值计算的时候，如果以一个nil数据为开始去计算，比如 nil.add(@2)，这样会导致程序崩溃，
+ 进入不了计算处理的安全处理阶段，所以如果需要避免这种情况，可以使用这个方法，比如：
+ AUUSafeNumber(nilNumber).add(@3).multiplying(@23)
+ @return 一个有效的数值
+ */
+id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number);
+
 /*
  比较两个数值，并返回其中的最大值
  要比较的数值必须是实现了`AUUNumberHandler`协议的数据类型

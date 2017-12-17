@@ -16,7 +16,7 @@
 /*
  
  
- `kAUUNumberImplementationQuickCreator` 宏，用来快速实现`AUUNumberHandler`中的一些简单重复的协议方法，
+ `kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR` 宏，用来快速实现`AUUNumberHandler`中的一些简单重复的协议方法，
  但是`decimalNumber`的这个属性的`get`方法必须自己实现
  
  
@@ -55,7 +55,7 @@
 /*
  实现了 AUUNumberHandler 协议的宏，包含一些数值的操作，方便别处使用
  */
-#define kAUUNumberImplementationQuickCreator                                                    \
+#define kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR                                                \
             /*          加法          */                                                         \
             __DecimalHandle__(id <AUUNumberHandler>, add)                                       \
             __DecimalHandleWithBehaviors__(id <AUUNumberHandler>, addWithBehaviors)             \

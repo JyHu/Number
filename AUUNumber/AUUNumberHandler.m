@@ -10,6 +10,9 @@
 #import "AUUNumberQuickCreator.h"
 
 
+id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number) {
+    return number && [number conformsToProtocol:@protocol(AUUNumberHandler)] ? (number.decimalNumber ?: @1) : @1;
+}
 
 
 @interface AUUNumberHandler ()
@@ -195,7 +198,7 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power) {
 
 @implementation NSString (AUUNumberHandler)
 
-kAUUNumberImplementationQuickCreator
+kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *)decimalNumber {
     // 需要数据处理的地方
@@ -217,7 +220,7 @@ kAUUNumberImplementationQuickCreator
 
 @implementation NSNumber (AUUNumberHandler)
 
-kAUUNumberImplementationQuickCreator
+kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *)decimalNumber {
     return [NSDecimalNumber decimalNumberWithDecimal:self.decimalValue];

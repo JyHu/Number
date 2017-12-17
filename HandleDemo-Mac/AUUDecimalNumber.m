@@ -20,6 +20,6 @@
     return @(self.value).dividing(AUUMultiplyingByPowerOf10(self.offset));
 }
 
-kAUUNumberImplementationQuickCreator
+kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 @end
