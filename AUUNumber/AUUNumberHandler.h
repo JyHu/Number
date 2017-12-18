@@ -10,9 +10,10 @@
 #import "AUUNumberHandlerProtocol.h"
 
 /**
- 在数值计算的时候，如果以一个nil数据为开始去计算，比如 nil.add(@2)，这样会导致程序崩溃，
- 进入不了计算处理的安全处理阶段，所以如果需要避免这种情况，可以使用这个方法，比如：
- AUUSafeNumber(nilNumber).add(@3).multiplying(@23)
+ 在数值计算的时候，如果操作数为nil，比如 nil.add(@2)，这样会导致程序崩溃，而且进入不了计算处
+ 理的安全处理阶段，所以如果需要避免这种情况，可以使用这个方法，比如：
+        AUUSafeNumber(nilNumber).add(@3).multiplying(@23)
+ 
  @return 一个有效的数值
  */
 id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number);
@@ -35,25 +36,53 @@ id <AUUNumberHandler> AUUMinNumber(id <AUUNumberHandler> number1, id <AUUNumberH
  */
 NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /**
  添加`NSString`的`category`，并实现`AUUNumberHandler`协议，用以实现多种类型间的直接计算
  */
-@interface NSString (AUUNumberHandler) <AUUNumberHandler>
+@interface NSString (AUUNumberHandler) <AUUNumberHandler, AUUNumberHandlerOperator>
 @end
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /**
  添加`NSNumber`的`category`，并实现`AUUNumberHandler`协议，用以实现多种类型间的直接计算
  */
-@interface NSNumber (AUUNumberHandler) <AUUNumberHandler>
+@interface NSNumber (AUUNumberHandler) <AUUNumberHandler, AUUNumberHandlerOperator>
 @end
+
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 /**
  添加`NSDecimalNumber`的`category`，并实现`AUUNumberHandler`协议，用以实现多种类型间的直接计算
  */
-@interface NSDecimalNumber (AUUNumberHandler) <AUUNumberHandler>
+@interface NSDecimalNumber (AUUNumberHandler) <AUUNumberHandler, AUUNumberHandlerOperator>
 @end
 
+//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+/**
+ 添加`NSArray`的`category`，并实现`AUUNumberHandler`协议，用以实现多种类型间的直接计算
+ 
+ @warning 数组中所有的数值对象，必须都实现了`AUUNumberHandler`协议，否则将会被跳过
+ 
+ @discuss 如果除以或乘以一个数组，则会乘以或除以这个数组的`积`
+          如果加上或减去一个数组，则会加上或减去这个数组的`和`
+ */
+@interface NSArray (AUUNumberHandler) <AUUNumberHandler>
+
+/**
+ 求和，如果某个元素未实现`AUUNumberHandler`协议，则会被跳过
+ */
+@property (retain, nonatomic, readonly) NSDecimalNumber *sum;
+
+/**
+ 求积，如果某个元素未实现`AUUNumberHandler`协议，则会被跳过
+ */
+@property (retain, nonatomic, readonly) NSDecimalNumber *product;
+
+@end
 
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

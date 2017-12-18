@@ -228,6 +228,35 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 @end
 
+@implementation NSArray (AUUNumberHandler)
+
+- (NSDecimalNumber *)decimalNumber {
+    id <AUUNumberHandler> value = self && self.count > 0 ? self.firstObject : nil;
+    return value && [value conformsToProtocol:@protocol(AUUNumberHandler)] ? value.decimalNumber : nil;
+}
+
+- (NSDecimalNumber *)sum {
+    NSDecimalNumber *res = nil;
+    for (id <AUUNumberHandler> number in self) {
+        if (number && [number conformsToProtocol:@protocol(AUUNumberHandler)]) {
+            res = res ? res.add(number) : number.decimalNumber;
+        }
+    }
+    return res;
+}
+
+- (NSDecimalNumber *)product {
+    NSDecimalNumber *res = nil;
+    for (id <AUUNumberHandler> number in self) {
+        if (number && [number conformsToProtocol:@protocol(AUUNumberHandler)]) {
+            res = res ? res.multiplying(number) : number.decimalNumber;
+        }
+    }
+    return res;
+}
+
+@end
+
 #pragma mark - Decimal Number
 #pragma mark -
 
@@ -248,7 +277,8 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))addWithBehaviors {
     return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberByAdding:value.decimalNumber withBehavior:behaviors];
+        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
+        return [self decimalNumberByAdding:decimalNumber withBehavior:behaviors];
     } copy];
 }
 
@@ -263,7 +293,8 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id <NSDecimalNumberBehaviors>))subtractingWithBehaviors {
     return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberBySubtracting:value.decimalNumber withBehavior:behaviors];
+        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
+        return [self decimalNumberBySubtracting:decimalNumber withBehavior:behaviors];
     } copy];
 }
 
@@ -278,7 +309,8 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))multiplyingWithBehaviors {
     return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberByMultiplyingBy:value.decimalNumber withBehavior:behaviors];
+        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
+        return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:behaviors];
     } copy];
 }
 
@@ -293,7 +325,8 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))dividingWithBehaviors {
     return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberByDividingBy:value.decimalNumber withBehavior:behaviors];
+        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
+        return [self decimalNumberByDividingBy:decimalNumber withBehavior:behaviors];
     } copy];
 }
 

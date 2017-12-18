@@ -109,11 +109,15 @@ int main(int argc, const char * argv[]) {
         tlog(@"\n\n错误计算2，在计算出错时纠错");
         tlog(@"bbb + 5 --> %@", @"bbb".add(@5).stringValue);
         
+        tlog(@"\n\n对数组做计算");
+        tlog(@"(20 + (10, 30, 400->1)) * (2, 3) / (3, 5) = %@", @"20".add(@[@10, @"30", [AUUDecimalNumber numberWithValue:400 offset:1]]).multiplying(@[@2, @3]).dividing(@[@3, @5]).stringValue);
+        
+        tlog(@"\n\n对象之间的数值计算");
         AUUDecimalNumber *dec1 = [AUUDecimalNumber numberWithValue:224 offset:3];
         AUUDecimalNumber *dec2 = [AUUDecimalNumber numberWithValue:1232 offset:2];
         AUUDecimalNumber *dec3 = [AUUDecimalNumber numberWithValue:53434 offset:4];
-        AUUDecimalNumber *dec4 = [AUUDecimalNumber numberWithValue:349012 offset:3];
-        tlog(@"对象之间的数值计算  %@", dec1.add(dec2).multiplying(dec3).dividing(dec4).numberStringWithFractionDigits(3));
+        AUUDecimalNumber *dec4 = [AUUDecimalNumber numberWithValue:349012 offset:5];
+        tlog(@"(224->3 + 1232->2) * 53434->4 / 349012->5 = %@", dec1.add(dec2).multiplying(dec3).dividing(dec4).numberStringWithFractionDigits(3));
     }
     return 0;
 }
