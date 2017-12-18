@@ -42,6 +42,11 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
  添加`NSString`的`category`，并实现`AUUNumberHandler`协议，用以实现多种类型间的直接计算
  */
 @interface NSString (AUUNumberHandler) <AUUNumberHandler, AUUNumberHandlerOperator>
+
+/**
+ 根据给定的formatter转换字符串为`NSDecimalNumber`
+ */
+- (NSDecimalNumber *)decimalNumberWithFormatter:(NSNumberFormatter *)formatter;
 @end
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -58,6 +63,12 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
  添加`NSDecimalNumber`的`category`，并实现`AUUNumberHandler`协议，用以实现多种类型间的直接计算
  */
 @interface NSDecimalNumber (AUUNumberHandler) <AUUNumberHandler, AUUNumberHandlerOperator>
+
+/**
+ 安全的数值转换的方法，用以避免操作数为空的情况
+ */
++ (NSDecimalNumber *)safeNumberWithNumberObject:(id <AUUNumberHandler>)numberObject;
+
 @end
 
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

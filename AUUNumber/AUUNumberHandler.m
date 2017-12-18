@@ -10,11 +10,6 @@
 #import "AUUNumberQuickCreator.h"
 
 
-id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number) {
-    return number && [number conformsToProtocol:@protocol(AUUNumberHandler)] ? (number.decimalNumber ?: @1) : @1;
-}
-
-
 @interface AUUNumberHandler ()
 
 @property (copy, nonatomic) id <AUUNumberHandler> (^numberStringRefactor)(NSString *numberString);
@@ -179,7 +174,9 @@ AUUNumberHandler *AUUDefaultRoundingHandler() {
 
 
 
-
+id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number) {
+    return [NSDecimalNumber safeNumberWithNumberObject:number];
+}
 
 id <AUUNumberHandler> AUUMaxNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2) {
     return (number1 && number2) ? ([number1.decimalNumber compare:number2.decimalNumber] == NSOrderedDescending ? number1 : number2) : nil;
@@ -199,6 +196,10 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power) {
 @implementation NSString (AUUNumberHandler)
 
 kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
+
+- (NSDecimalNumber *)decimalNumberWithFormatter:(NSNumberFormatter *)formatter {
+    return [[formatter numberFromString:self] decimalNumber];
+}
 
 - (NSDecimalNumber *)decimalNumber {
     // 需要数据处理的地方
@@ -261,6 +262,25 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 #pragma mark -
 
 @implementation NSDecimalNumber (AUUNumberHandler)
+
++ (NSDecimalNumber *)safeNumberWithNumberObject:(id<AUUNumberHandler>)numberObject
+{
+    NSDecimalNumber *safeNumber = nil;
+    if (numberObject && [numberObject conformsToProtocol:@protocol(AUUNumberHandler)]) {
+        safeNumber = numberObject.decimalNumber;
+    }
+    
+    if (safeNumber) {
+        return safeNumber;
+    }
+    
+    if ([AUUNumberHandler sharedHandler].enableDebuging) {
+        NSAssert(0, @"非法的操作数");
+        return nil;
+    }
+    
+    return (@1).decimalNumber;
+}
 
 - (NSDecimalNumber *)decimalNumber {
     return self;
