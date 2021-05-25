@@ -9,16 +9,20 @@
 #import "AUUNumberHandler.h"
 #import "AUUNumberQuickCreator.h"
 
-
 @interface AUUNumberHandler ()
 
-@property (copy, nonatomic) id <AUUNumberHandler> (^numberStringRefactor)(NSString *numberString);
+@property (copy, nonatomic) id <AUUNumberHandler> (^ numberStringRefactor)(NSString *numberString);
 
 @property (assign, nonatomic) BOOL enableDebuging;
+
+@property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumberFormatter *> *cachedFormatters;
 
 @end
 
 @implementation AUUNumberHandler
+{
+    dispatch_semaphore_t semaphore_lock_t;
+}
 
 + (instancetype)sharedHandler {
     static AUUNumberHandler *handler;
@@ -26,6 +30,8 @@
     dispatch_once(&onceToken, ^{
         handler = AUUDefaultRoundingHandler();
         handler.enableDebuging = NO;
+        handler.cachedFormatters = [[NSMutableDictionary alloc] init];
+        handler->semaphore_lock_t = dispatch_semaphore_create(1);
     });
     return handler;
 }
@@ -47,7 +53,7 @@
         self.mode = roundingMode;
         self.roundingScale = scale;
     }
-    
+
     return self;
 }
 
@@ -98,7 +104,7 @@
     } else if ([AUUNumberHandler sharedHandler].exceptionHandlerDurationOperation) {
         return [AUUNumberHandler sharedHandler].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
     }
-    
+
     NSString *errorName = @"";
     switch (error) {
         case NSCalculationLossOfPrecision:
@@ -116,77 +122,90 @@
         default:
             break;
     }
-    
+
     NSString *errorInfo = [NSString stringWithFormat:@"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), errorName, leftOperand, rightOperand];
-    
+
     NSLog(@"%@", errorInfo);
-    
-    if ((error == NSCalculationOverflow && self.raiseOnOverflow)||
+
+    if ((error == NSCalculationOverflow && self.raiseOnOverflow) ||
         (error == NSCalculationDivideByZero && self.raiseOnDivideByZero) ||
         ((error == NSCalculationUnderflow || error == NSCalculationLossOfPrecision) && self.raiseOnExactness)) {
-        
         if ([AUUNumberHandler sharedHandler].enableDebuging) {
             NSAssert(0, errorInfo);
         }
     }
-    
+
     if ([AUUNumberHandler sharedHandler].enableDebuging) {
         return nil;
     }
-    
+
     if (leftOperand && [leftOperand isKindOfClass:[NSNumber class]] && [leftOperand compare:@0] != NSOrderedSame) {
         return leftOperand;
     }
-    
+
     if (rightOperand && [rightOperand isKindOfClass:[NSNumber class]] && [rightOperand compare:@0] != NSOrderedSame) {
         return rightOperand;
     }
-    
+
     return (@1).decimalNumber;
+}
+
+- (NSNumberFormatter *)formatterWithFractionDigits:(short)fractionDigits numberStyle:(NSNumberFormatterStyle)numberStyle {
+    NSNumberFormatter *formatter = nil;
+    dispatch_semaphore_wait(semaphore_lock_t, DISPATCH_TIME_FOREVER);
+    NSString *key = [NSString stringWithFormat:@"%d-%ld", fractionDigits, numberStyle];
+    formatter = [self.cachedFormatters objectForKey:key];
+    if (formatter == nil) {
+        formatter = [[NSNumberFormatter alloc] init];
+        formatter.numberStyle = numberStyle;
+        formatter.minimumFractionDigits = fractionDigits;
+        formatter.maximumFractionDigits = fractionDigits;
+        formatter.minimumIntegerDigits = 1;
+        [self.cachedFormatters setObject:formatter forKey:key];
+    }
+    dispatch_semaphore_signal(semaphore_lock_t);
+    return formatter;
 }
 
 @end
 
-AUUNumberHandler *AUURoundingMode(NSRoundingMode roundingMode) {
+AUUNumberHandler * AUURoundingMode(NSRoundingMode roundingMode)
+{
     return [[AUUNumberHandler alloc] initHandlerWithRoundingMode:roundingMode scale:[NSDecimalNumberHandler defaultDecimalNumberHandler].scale];
 }
-AUUNumberHandler *AUURoundingScale(short scale) {
+
+AUUNumberHandler * AUURoundingScale(short scale)
+{
     return [[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:scale];
 }
 
-AUUNumberHandler *AUUDefaultRoundingHandler() {
+AUUNumberHandler * AUUDefaultRoundingHandler()
+{
     return [[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:[NSDecimalNumberHandler defaultDecimalNumberHandler].scale];
 }
 
-
-
-
-
-
-
-
-
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 //%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-
-
-id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number) {
+id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number)
+{
     return [NSDecimalNumber safeNumberWithNumberObject:number];
 }
 
-id <AUUNumberHandler> AUUMaxNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2) {
+id <AUUNumberHandler> AUUMaxNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2)
+{
     return (number1 && number2) ? ([number1.decimalNumber compare:number2.decimalNumber] == NSOrderedDescending ? number1 : number2) : nil;
 }
 
-id <AUUNumberHandler> AUUMinNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2) {
+id <AUUNumberHandler> AUUMinNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2)
+{
     return (number1 && number2) ? ([number1.decimalNumber compare:number2.decimalNumber] == NSOrderedAscending ? number1 : number2) : nil;
 }
 
-NSNumber * AUUMultiplyingByPowerOf10(NSInteger power) {
+NSNumber * AUUMultiplyingByPowerOf10(NSInteger power)
+{
     return @(1).multiplyingByPowerOf10(power);
 }
 
@@ -269,16 +288,16 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
     if (numberObject && [numberObject conformsToProtocol:@protocol(AUUNumberHandler)]) {
         safeNumber = numberObject.decimalNumber;
     }
-    
+
     if (safeNumber) {
         return safeNumber;
     }
-    
+
     if ([AUUNumberHandler sharedHandler].enableDebuging) {
         NSAssert(0, @"非法的操作数");
         return nil;
     }
-    
+
     return (@1).decimalNumber;
 }
 
@@ -290,94 +309,94 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 //===============================================   加法   ===============================================
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>))add {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value){
-        return self.addWithBehaviors(value, [AUUNumberHandler sharedHandler]);
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value) {
+               return self.addWithBehaviors(value, [AUUNumberHandler sharedHandler]);
+    };
 }
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))addWithBehaviors {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
-        return [self decimalNumberByAdding:decimalNumber withBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
+               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
+               return [self decimalNumberByAdding:decimalNumber withBehavior:behaviors];
+    };
 }
 
 //========================================================================================================
 //===============================================   减法   ===============================================
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>))subtracting {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value) {
-        return self.subtractingWithBehaviors(value, [AUUNumberHandler sharedHandler]);
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value) {
+               return self.subtractingWithBehaviors(value, [AUUNumberHandler sharedHandler]);
+    };
 }
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id <NSDecimalNumberBehaviors>))subtractingWithBehaviors {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
-        return [self decimalNumberBySubtracting:decimalNumber withBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
+               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
+               return [self decimalNumberBySubtracting:decimalNumber withBehavior:behaviors];
+    };
 }
 
 //========================================================================================================
 //===============================================   乘法   ===============================================
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>))multiplying {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value) {
-        return self.multiplyingWithBehaviors(value, [AUUNumberHandler sharedHandler]);
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value) {
+               return self.multiplyingWithBehaviors(value, [AUUNumberHandler sharedHandler]);
+    };
 }
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))multiplyingWithBehaviors {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
-        return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
+               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
+               return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:behaviors];
+    };
 }
 
 //========================================================================================================
 //===============================================   除法   ===============================================
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>))dividing {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value) {
-        return self.dividingWithBehaviors(value, [AUUNumberHandler sharedHandler]);
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value) {
+               return self.dividingWithBehaviors(value, [AUUNumberHandler sharedHandler]);
+    };
 }
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))dividingWithBehaviors {
-    return [^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-        NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
-        return [self decimalNumberByDividingBy:decimalNumber withBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
+               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
+               return [self decimalNumberByDividingBy:decimalNumber withBehavior:behaviors];
+    };
 }
 
 //========================================================================================================
 //===============================================   乘方   ===============================================
 
 - (NSDecimalNumber *(^)(NSUInteger))raisingToPower {
-    return [^NSDecimalNumber *(NSUInteger power) {
-        return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler sharedHandler]);
-    } copy];
+    return ^NSDecimalNumber *(NSUInteger power) {
+               return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler sharedHandler]);
+    };
 }
 
 - (NSDecimalNumber *(^)(NSUInteger, id<NSDecimalNumberBehaviors>))raisingToPowerWithBehaviors {
-    return [^NSDecimalNumber *(NSUInteger power, id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberByRaisingToPower:power withBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(NSUInteger power, id <NSDecimalNumberBehaviors> behaviors) {
+               return [self decimalNumberByRaisingToPower:power withBehavior:behaviors];
+    };
 }
 
 //========================================================================================================
 //===============================================   指数   ===============================================
 
 - (NSDecimalNumber *(^)(short))multiplyingByPowerOf10 {
-    return [^NSDecimalNumber *(NSUInteger power) {
-        return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler sharedHandler]);
-    } copy];
+    return ^NSDecimalNumber *(short power) {
+               return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler sharedHandler]);
+    };
 }
 
 - (NSDecimalNumber *(^)(short, id<NSDecimalNumberBehaviors>))multiplyingByPowerOf10WithBehaviors {
-    return [^NSDecimalNumber *(short power, id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(short power, id <NSDecimalNumberBehaviors> behaviors) {
+               return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:behaviors];
+    };
 }
 
 //=======================================================================================================
@@ -388,9 +407,9 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))squareWithBehaviors {
-    return [^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
-        return self.raisingToPowerWithBehaviors(2, behaviors);
-    } copy];
+    return ^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
+               return self.raisingToPowerWithBehaviors(2, behaviors);
+    };
 }
 
 //========================================================================================================
@@ -401,9 +420,9 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))cubeWithBehaviors {
-    return [^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
-        return self.raisingToPowerWithBehaviors(3, behaviors);
-    } copy];
+    return ^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
+               return self.raisingToPowerWithBehaviors(3, behaviors);
+    };
 }
 
 //========================================================================================================
@@ -420,50 +439,44 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 #pragma mark -
 
 - (NSDecimalNumber *(^)(short))roundingWithScale {
-    return [^NSDecimalNumber *(short scale) {
-        AUUNumberHandler *handler = AUUDefaultRoundingHandler();
-        handler.roundingScale = scale;
-        return self.roundingWithBehaviors(handler);
-    } copy];
+    return ^NSDecimalNumber *(short scale) {
+               AUUNumberHandler *handler = AUUDefaultRoundingHandler();
+               handler.roundingScale = scale;
+               return self.roundingWithBehaviors(handler);
+    };
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))roundingWithBehaviors {
-    return [^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
-        return [self decimalNumberByRoundingAccordingToBehavior:behaviors];
-    } copy];
+    return ^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
+               return [self decimalNumberByRoundingAccordingToBehavior:behaviors];
+    };
 }
 
 #pragma mark - to string
 #pragma mark -
 
 - (NSString *(^)(short))numberStringWithFractionDigits {
-    return [^NSString *(short fractionDigits) {
-        return self.numberStringWith(fractionDigits, NSNumberFormatterNoStyle);
-    } copy];
+    return ^NSString *(short fractionDigits) {
+               return self.numberStringWith(fractionDigits, NSNumberFormatterNoStyle);
+    };
 }
 
 - (NSString *(^)(short))decimalStringWithFractionDigits {
-    return [^NSString *(short fractionDigits) {
-        return self.numberStringWith(fractionDigits, NSNumberFormatterDecimalStyle);
-    } copy];
+    return ^NSString *(short fractionDigits) {
+               return self.numberStringWith(fractionDigits, NSNumberFormatterDecimalStyle);
+    };
 }
 
 - (NSString *(^)(short, NSNumberFormatterStyle))numberStringWith {
-    return [^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) {
-        NSNumberFormatter *formatter = [[NSNumberFormatter alloc] init];
-        formatter.numberStyle = numberStyle;
-        formatter.minimumFractionDigits = fractionDigits;
-        formatter.maximumFractionDigits = fractionDigits;
-        formatter.minimumIntegerDigits = 1;
-        return self.numberStringWithFormatter(formatter);
-    } copy];
+    return ^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) {
+               return self.numberStringWithFormatter([[AUUNumberHandler sharedHandler] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
+    };
 }
 
 - (NSString *(^)(NSNumberFormatter *))numberStringWithFormatter {
-    return [^NSString *(NSNumberFormatter *formatter) {
-        return formatter ? [formatter stringFromNumber:self] : self.stringValue;
-    } copy];
+    return ^NSString *(NSNumberFormatter *formatter) {
+               return formatter ? [formatter stringFromNumber:self] : self.stringValue;
+    };
 }
 
 @end
-
