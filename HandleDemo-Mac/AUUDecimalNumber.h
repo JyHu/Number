@@ -19,7 +19,7 @@
 
 
 
-@interface AUUDecimalNumber : NSObject <AUUNumberHandler, AUUNumberHandlerOperator>
+@interface AUUDecimalNumber : NSObject <AUUNumberHandler>
 
 + (instancetype)numberWithValue:(NSInteger)value offset:(NSInteger)offset;
 

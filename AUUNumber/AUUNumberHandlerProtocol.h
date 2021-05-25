@@ -62,8 +62,6 @@
  */
 @property (retain, nonatomic, readonly) NSDecimalNumber *decimalNumber;
 
-@end
-
 /*
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,10 +73,6 @@
 
 #pragma mark - 数字的基础运算，包括加减乘除
 #pragma mark -
-
-@protocol AUUNumberHandlerBaseOperator <NSObject>
-
-@required
 
 /**
  加法
@@ -104,8 +98,6 @@
 @property (copy, nonatomic, readonly) NSDecimalNumber * (^ dividing)(id <AUUNumberHandler> value);
 @property (copy, nonatomic, readonly) NSDecimalNumber * (^ dividingWithBehaviors)(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors);
 
-@end
-
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -117,10 +109,6 @@
 
 #pragma mark - 数字的一些扩展运算
 #pragma mark -
-
-@protocol AUUNumberHandlerOperator <AUUNumberHandlerBaseOperator>
-
-@required
 
 /**
  n次方
