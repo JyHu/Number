@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "AUUNumber.h"
+#import <AUUNumber/AUUNumber.h>
 #import "AUUDecimalNumber.h"
 
 void tlog(id fmt, ...) {
@@ -21,7 +21,9 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         // insert code here...
         
-        [AUUNumberHandler globalNumberStringRefactorWithNumber:^id(NSString *numberString) {
+        AUUNumberHandler *handler = [AUUNumberHandler shared];
+        
+        [handler setNumberStringRefactor:^id<AUUNumberHandler>(NSString *numberString) {
             NSString *fac = numberString;
             if ([fac containsString:@","]) {
                 fac = [fac stringByReplacingOccurrencesOfString:@"," withString:@""];
@@ -42,10 +44,7 @@ int main(int argc, const char * argv[]) {
             return @1;
         }];
         
-        [AUUNumberHandler globalNumberHandler:^(AUUNumberHandler *numberHandler) {
-            numberHandler.roundingScale = 5;
-            numberHandler.mode = NSRoundPlain;
-        } exceptionHandler:^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
+        [handler setExceptionHandlerDurationOperation:^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
             NSLog(@"计算数值出错 %@ %@ %@", NSStringFromSelector(operation), leftOperand, rightOperant);
             if (error == NSCalculationByNil) {
                 return (@1).decimalNumber;
@@ -62,17 +61,6 @@ int main(int argc, const char * argv[]) {
                 tlog(@"345.34 --> %@, 343.2432435 - > %@", @(345.34).numberStringWithFractionDigits(4), @"343.2432435".numberStringWithFractionDigits(4));
                 tlog(@"343.3434545 --> %@", @(343.3434545).roundingWithScale(3).stringValue);
                 tlog(@"%@", @"87.230912423".roundingWithBehaviors([NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundPlain scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO]));
-                
-                AUUNumberHandler *numberHandler = AUUDefaultRoundingHandler();
-                numberHandler.roundingScale = 5;
-                
-                tlog(@"3,4343.292345927349 --> %@", @"3,4343.292345927349".roundingWithBehaviors(numberHandler));
-                
-                AUUNumberHandler *defaultHandler = AUUDefaultRoundingHandler();
-                defaultHandler.exceptionHandlerDurationOperation = ^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
-                    return [NSDecimalNumber decimalNumberWithString:@"23"];
-                };
-                tlog(@"5555 / 0 = %@", @"5555".dividingWithBehaviors(@0, defaultHandler));
                 
                 tlog(@"\n\n绝对值");
                 tlog(@"-3434.3434 --> %@", @"-3434.3434".abs.stringValue);

@@ -11,10 +11,6 @@
 
 @interface AUUNumberHandler ()
 
-@property (copy, nonatomic) id <AUUNumberHandler> (^ numberStringRefactor)(NSString *numberString);
-
-@property (assign, nonatomic) BOOL enableDebuging;
-
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumberFormatter *> *cachedFormatters;
 
 @end
@@ -24,114 +20,80 @@
 	dispatch_semaphore_t semaphore_lock_t;
 }
 
-+ (instancetype)sharedHandler {
++ (instancetype)shared {
 	static AUUNumberHandler *handler;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
-		handler = AUUDefaultRoundingHandler();
-		handler.enableDebuging = NO;
-		handler.cachedFormatters = [[NSMutableDictionary alloc] init];
-		handler->semaphore_lock_t = dispatch_semaphore_create(1);
+		handler = [[AUUNumberHandler alloc] init];
 	});
 	return handler;
 }
 
-+ (id <AUUNumberHandler>)safeNumberStringRefactor:(NSString *)numberString {
-	if ([AUUNumberHandler sharedHandler].numberStringRefactor) {
-		return [AUUNumberHandler sharedHandler].numberStringRefactor(numberString);
-	}
-	return (id <AUUNumberHandler>)numberString;
-}
-
 - (instancetype)init {
-	NSAssert(0, @"Please use initHandlerWithRoundingMode:scale: init the modle.");
+	if (self = [super init]) {
+		self->semaphore_lock_t = dispatch_semaphore_create(1);
+		self.cachedFormatters = [[NSMutableDictionary alloc] init];
+		self.auu_roundingMode = NSRoundPlain;
+		self.auu_scale = [NSDecimalNumberHandler defaultDecimalNumberHandler].scale;
+	}
 	return self;
 }
 
 - (instancetype)initHandlerWithRoundingMode:(NSRoundingMode)roundingMode scale:(short)scale {
 	if (self = [super init]) {
-		self.mode = roundingMode;
-		self.roundingScale = scale;
+		self.auu_roundingMode = roundingMode;
+		self.auu_scale = scale;
 	}
 
 	return self;
-}
-
-+ (AUUNumberHandler *)numberHandlerWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionDurationOperation {
-	AUUNumberHandler *handler = [[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:[NSDecimalNumberHandler defaultDecimalNumberHandler].scale];
-	handler.exceptionHandlerDurationOperation = exceptionDurationOperation;
-	return handler;
-}
-
-#pragma mark - global setting
-#pragma mark -
-
-+ (void)globalNumberHandler:(void (^)(AUUNumberHandler *))numberHandler
-           exceptionHandler:(AUUNumberOperationExceptionHandler)exceptionDurationOperation {
-	if (numberHandler) {
-		numberHandler([self sharedHandler]);
-	}
-	if (exceptionDurationOperation) {
-		[[self sharedHandler] setExceptionHandlerDurationOperation:[exceptionDurationOperation copy]];
-	}
-}
-
-+ (void)globalNumberStringRefactorWithNumber:(id <AUUNumberHandler> (^)(NSString *))numberStringRefactor {
-	if (numberStringRefactor) {
-		[[self sharedHandler] setNumberStringRefactor:[numberStringRefactor copy]];
-	}
-}
-
-+ (void)enableDebugingMode:(BOOL)enable {
-	[AUUNumberHandler sharedHandler].enableDebuging = enable;
 }
 
 #pragma mark - NSDecimalNumberBehaviors delegate
 #pragma mark -
 
 - (NSRoundingMode)roundingMode {
-	return self.mode;
+	return self.self.auu_roundingMode;
 }
 
 - (short)scale {
-	return self.roundingScale;
+	return self.auu_scale;
 }
 
 - (NSDecimalNumber *)exceptionDuringOperation:(SEL)operation
-                                        error:(NSCalculationError)error
-                                  leftOperand:(NSDecimalNumber *)leftOperand
-                                 rightOperand:(NSDecimalNumber *)rightOperand {
+        error:(NSCalculationError)error
+        leftOperand:(NSDecimalNumber *)leftOperand
+        rightOperand:(NSDecimalNumber *)rightOperand {
 
 	NSString *errorName = @"";
 	switch (error) {
-        case NSCalculationLossOfPrecision:
-            errorName = @"NSCalculationLossOfPrecision";
-            break;
-        case NSCalculationUnderflow:
-            errorName = @"NSCalculationUnderflow";
-            break;
-        case NSCalculationDivideByZero:
-            errorName = @"NSCalculationDivideByZero";
-            break;
-        case NSCalculationOverflow:
-            errorName = @"NSCalculationOverflow";
-            break;
-        case NSCalculationByNil:
-            errorName = @"NSCalculationByNil";
-            break;
-        default:
-            break;
+	case NSCalculationLossOfPrecision:
+		errorName = @"NSCalculationLossOfPrecision";
+		break;
+	case NSCalculationUnderflow:
+		errorName = @"NSCalculationUnderflow";
+		break;
+	case NSCalculationDivideByZero:
+		errorName = @"NSCalculationDivideByZero";
+		break;
+	case NSCalculationOverflow:
+		errorName = @"NSCalculationOverflow";
+		break;
+	case NSCalculationByNil:
+		errorName = @"NSCalculationByNil";
+		break;
+	default:
+		break;
 	}
 
-    if ([AUUNumberHandler sharedHandler].enableDebuging) {
-        NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), errorName, leftOperand, rightOperand);
-    }
-
-	if (self.exceptionHandlerDurationOperation) {
-		return self.exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
+	if ([AUUNumberHandler shared].enableDebuging) {
+		NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), errorName, leftOperand, rightOperand);
 	}
 
-	if ([AUUNumberHandler sharedHandler].enableDebuging) {
+	if ([AUUNumberHandler shared].exceptionHandlerDurationOperation) {
+		return [AUUNumberHandler shared].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
+	}
+
+	if ([AUUNumberHandler shared].enableDebuging) {
 		return nil;
 	}
 
@@ -163,25 +125,14 @@
 	return formatter;
 }
 
++ (id <AUUNumberHandler>)safeNumberStringRefactor:(NSString *)numberString {
+	if ([AUUNumberHandler shared].numberStringRefactor) {
+		return [AUUNumberHandler shared].numberStringRefactor(numberString);
+	}
+	return (id <AUUNumberHandler>)numberString;
+}
+
 @end
-
-AUUNumberHandler * AUURoundingMode(NSRoundingMode roundingMode)
-{
-	return [[AUUNumberHandler alloc] initHandlerWithRoundingMode:roundingMode scale:[NSDecimalNumberHandler defaultDecimalNumberHandler].scale];
-}
-
-AUUNumberHandler * AUURoundingScale(short scale)
-{
-	return [[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:scale];
-}
-
-AUUNumberHandler * AUUDefaultRoundingHandler()
-{
-	return [[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:[NSDecimalNumberHandler defaultDecimalNumberHandler].scale];
-}
-
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number)
 {
@@ -281,9 +232,8 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 		return safeNumber;
 	}
 
-	if ([AUUNumberHandler sharedHandler].enableDebuging) {
+	if ([AUUNumberHandler shared].enableDebuging) {
 		NSAssert(0, @"非法的操作数");
-		return nil;
 	}
 
 	return (@1).decimalNumber;
@@ -296,10 +246,10 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 #define _CALCULATE_FUNCTION_(CALCULATE_FUNC, REALIZE_FUNC)                                 \
 	- (NSDecimalNumber *(^)(id <AUUNumberHandler>))CALCULATE_FUNC {                   \
 		return ^NSDecimalNumber *(id <AUUNumberHandler> value) {            \
-			       return self.CALCULATE_FUNC##WithBehaviors(value, [AUUNumberHandler sharedHandler]); \
+			       return self.CALCULATE_FUNC ## WithBehaviors(value, [AUUNumberHandler shared]); \
 		};                                                                  \
 	}                                                                       \
-	- (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))CALCULATE_FUNC##WithBehaviors {      \
+	- (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))CALCULATE_FUNC ## WithBehaviors {      \
 		return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {   \
 			       NSDecimalNumber *decimalNumber = value.decimalNumber;                                    \
 			       if (decimalNumber == nil) {                                                              \
@@ -310,7 +260,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 	}
 
 //================================================================================
-//================================   加 减 乘 除   ==================================
+//================================   加 减 乘 除   =================================
 
 _CALCULATE_FUNCTION_(add, decimalNumberByAdding)                /// 加法
 _CALCULATE_FUNCTION_(subtracting, decimalNumberBySubtracting)   /// 减法
@@ -322,7 +272,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(NSUInteger))raisingToPower {
 	return ^NSDecimalNumber *(NSUInteger power) {
-		       return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler sharedHandler]);
+		       return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler shared]);
 	};
 }
 
@@ -337,7 +287,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(short))multiplyingByPowerOf10 {
 	return ^NSDecimalNumber *(short power) {
-		       return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler sharedHandler]);
+		       return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler shared]);
 	};
 }
 
@@ -351,7 +301,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 //=================================   平方   ================================
 
 - (NSDecimalNumber *)square {
-	return self.squareWithBehaviors([AUUNumberHandler sharedHandler]);
+	return self.squareWithBehaviors([AUUNumberHandler shared]);
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))squareWithBehaviors {
@@ -364,7 +314,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 //=================================   立方   ===============================
 
 - (NSDecimalNumber *)cube {
-	return self.cubeWithBehaviors([AUUNumberHandler sharedHandler]);
+	return self.cubeWithBehaviors([AUUNumberHandler shared]);
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))cubeWithBehaviors {
@@ -388,9 +338,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(short))roundingWithScale {
 	return ^NSDecimalNumber *(short scale) {
-		       AUUNumberHandler *handler = AUUDefaultRoundingHandler();
-		       handler.roundingScale = scale;
-		       return self.roundingWithBehaviors(handler);
+		       return self.roundingWithBehaviors([[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:scale]);
 	};
 }
 
@@ -417,7 +365,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSString *(^)(short, NSNumberFormatterStyle))numberStringWith {
 	return ^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) {
-		       return self.numberStringWithFormatter([[AUUNumberHandler sharedHandler] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
+		       return self.numberStringWithFormatter([[AUUNumberHandler shared] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
 	};
 }
 

@@ -64,9 +64,6 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
 
 @end
 
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 /// 处理数值计算时出错的block
 /// @param operation 数值计算的方法
 /// @param error 错误的类型
@@ -77,37 +74,23 @@ typedef NSDecimalNumber *(^AUUNumberOperationExceptionHandler)(SEL operation, NS
 
 @interface AUUNumberHandler : NSObject <NSDecimalNumberBehaviors>
 
-@property (assign, nonatomic) NSRoundingMode mode;      // 四舍五入的方式
-@property (assign, nonatomic) short roundingScale;              // 保留几位小数
+/// 单例
++ (instancetype)shared;
 
-/// 初始化方法
-/// @param roundingMode 四舍五入方式
-/// @param scale 保留小数位数
-- (instancetype)initHandlerWithRoundingMode:(NSRoundingMode)roundingMode scale:(short)scale;
+/// 四舍五入的方式
+@property (assign, nonatomic) NSRoundingMode auu_roundingMode;
 
-///  一个初始化的方式
-/// @param exceptionDurationOperation 用来提供给外部处理异常时的block
-+ (AUUNumberHandler *)numberHandlerWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionDurationOperation;
+/// 保留几位小数
+@property (assign, nonatomic) short auu_scale;
+
+/// 设置是否需要全局的调试方法
+@property (assign, nonatomic) BOOL enableDebuging;
+
+/// 字符串转数字的特殊处理
+/// 比如有的字符串是12'23处理成数值会是12.23
+@property (copy, nonatomic) id <AUUNumberHandler> (^ numberStringRefactor)(NSString *numberString);
 
 /// 提供给外部使用，用于解决计算错误得问题
 @property (copy, nonatomic) AUUNumberOperationExceptionHandler exceptionHandlerDurationOperation;
 
-/// 全局的错误兼容处理方法，外部使用的时候只需要在一个地方写一次就行
-/// @param numberHandler 对于handler的处理
-/// @param exceptionDurationOperation 全局的错误处理方法
-+ (void)globalNumberHandler:(void (^)(AUUNumberHandler *numberHandler))numberHandler
-           exceptionHandler:(AUUNumberOperationExceptionHandler)exceptionDurationOperation;
-
-/// 全局的字符串数值处理方法，因为内部计算时都是使用NSDecimalNumber进行的，
-/// 所以对于字符串需要进行转换，如果外部需要对字符串数值做处理的话，就需要使用这个方法
-/// @param numberStringRefactor 数值转换的全局处理方法
-+ (void)globalNumberStringRefactorWithNumber:(id <AUUNumberHandler> (^)(NSString *numberString))numberStringRefactor;
-
-/// 设置是否需要全局的调试方法
-+ (void)enableDebugingMode:(BOOL)enable;
-
 @end
-
-AUUNumberHandler * AUURoundingMode(NSRoundingMode roundingMode);
-AUUNumberHandler * AUURoundingScale(short scale);
-AUUNumberHandler * AUUDefaultRoundingHandler(void);
