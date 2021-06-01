@@ -21,8 +21,6 @@ int main(int argc, const char * argv[]) {
     @autoreleasepool {
         // insert code here...
         
-        NSLog(@"%@", @(0).numberStringWithFractionDigits(1));
-        
         [AUUNumberHandler globalNumberStringRefactorWithNumber:^id(NSString *numberString) {
             NSString *fac = numberString;
             if ([fac containsString:@","]) {
@@ -47,15 +45,15 @@ int main(int argc, const char * argv[]) {
         [AUUNumberHandler globalNumberHandler:^(AUUNumberHandler *numberHandler) {
             numberHandler.roundingScale = 5;
             numberHandler.mode = NSRoundPlain;
-            numberHandler.raiseOnOverflow = YES;
         } exceptionHandler:^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
+            NSLog(@"计算数值出错 %@ %@ %@", NSStringFromSelector(operation), leftOperand, rightOperant);
             if (error == NSCalculationByNil) {
                 return (@1).decimalNumber;
             }
             return (@1).decimalNumber;
         }];
         
-        @"111".multiplying(nil);
+        @"111".add(nil).subtracting(nil).multiplying(nil).dividing(nil);
         
         for (NSInteger i = 0; i < 10000; i ++) {
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
