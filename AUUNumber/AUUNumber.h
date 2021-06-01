@@ -6,10 +6,10 @@
 //
 //
 
-#import "AUUNumberHandler.h"
-#import "AUUNumberHandlerProtocol.h"
-#import "NSString+AUUNumberCheck.h"
-#import "AUUNumberQuickCreator.h"
+#import <AUUNumber/AUUNumberHandler.h>
+#import <AUUNumber/AUUNumberHandlerProtocol.h>
+#import <AUUNumber/NSString+AUUNumberCheck.h>
+#import <AUUNumber/AUUNumberQuickCreator.h>
 
 //! Project version number for AUUNumber.
 FOUNDATION_EXPORT double AUUNumberVersionNumber;
