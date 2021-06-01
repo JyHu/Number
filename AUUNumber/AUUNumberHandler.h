@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 #import "AUUNumberHandlerProtocol.h"
 
+#define NSCalculationByNil 100
+
 /**
  在数值计算的时候，如果操作数为nil，比如 nil.add(@2)，这样会导致程序崩溃，而且进入不了计算处
  理的安全处理阶段，所以如果需要避免这种情况，可以使用这个方法，比如：
@@ -81,7 +83,7 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
  @discuss 如果除以或乘以一个数组，则会乘以或除以这个数组的`积`
           如果加上或减去一个数组，则会加上或减去这个数组的`和`
  */
-@interface NSArray (AUUNumberHandler) <AUUNumberHandler>
+@interface NSArray (AUUNumberHandler)
 
 /**
  求和，如果某个元素未实现`AUUNumberHandler`协议，则会被跳过

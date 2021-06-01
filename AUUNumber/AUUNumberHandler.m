@@ -75,8 +75,7 @@
     }
 }
 
-+ (void)globalNumberStringRefactorWithNumber:(id <AUUNumberHandler> (^)(NSString *))numberStringRefactor
-{
++ (void)globalNumberStringRefactorWithNumber:(id <AUUNumberHandler> (^)(NSString *))numberStringRefactor {
     if (numberStringRefactor) {
         [[self sharedHandler] setNumberStringRefactor:[numberStringRefactor copy]];
     }
@@ -99,11 +98,6 @@
 
 - (NSDecimalNumber *)exceptionDuringOperation:(SEL)operation error:(NSCalculationError)error
                                   leftOperand:(NSDecimalNumber *)leftOperand rightOperand:(NSDecimalNumber *)rightOperand {
-    if (self.exceptionHandlerDurationOperation) {
-        return self.exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
-    } else if ([AUUNumberHandler sharedHandler].exceptionHandlerDurationOperation) {
-        return [AUUNumberHandler sharedHandler].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
-    }
 
     NSString *errorName = @"";
     switch (error) {
@@ -133,6 +127,12 @@
         if ([AUUNumberHandler sharedHandler].enableDebuging) {
             NSAssert(0, errorInfo);
         }
+    }
+    
+    if (self.exceptionHandlerDurationOperation) {
+        return self.exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
+    } else if ([AUUNumberHandler sharedHandler].exceptionHandlerDurationOperation) {
+        return [AUUNumberHandler sharedHandler].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
     }
 
     if ([AUUNumberHandler sharedHandler].enableDebuging) {
@@ -250,11 +250,6 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 @implementation NSArray (AUUNumberHandler)
 
-- (NSDecimalNumber *)decimalNumber {
-    id <AUUNumberHandler> value = self && self.count > 0 ? self.firstObject : nil;
-    return value && [value conformsToProtocol:@protocol(AUUNumberHandler)] ? value.decimalNumber : nil;
-}
-
 - (NSDecimalNumber *)sum {
     NSDecimalNumber *res = nil;
     for (id <AUUNumberHandler> number in self) {
@@ -305,6 +300,14 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
     return self;
 }
 
+#define _CALCULATE_BY_ARRAY_PRODUCT_CHECK_ (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber
+#define _CALCULATE_BY_ARRAY_SUM_CHECK_     (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber
+#define _CALCULATE_BY_NIL_NUMBER_CHECK_ \
+    NSDecimalNumber *decimalNumber = value.decimalNumber; \
+    if (decimalNumber == nil) { \
+        decimalNumber = [behaviors exceptionDuringOperation:_cmd error:NSCalculationByNil leftOperand:self rightOperand:decimalNumber]; \
+    }
+
 //========================================================================================================
 //===============================================   加法   ===============================================
 
@@ -316,7 +319,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))addWithBehaviors {
     return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
+               _CALCULATE_BY_NIL_NUMBER_CHECK_
                return [self decimalNumberByAdding:decimalNumber withBehavior:behaviors];
     };
 }
@@ -332,7 +335,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id <NSDecimalNumberBehaviors>))subtractingWithBehaviors {
     return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).sum : value.decimalNumber;
+               _CALCULATE_BY_NIL_NUMBER_CHECK_
                return [self decimalNumberBySubtracting:decimalNumber withBehavior:behaviors];
     };
 }
@@ -348,7 +351,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))multiplyingWithBehaviors {
     return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
+               _CALCULATE_BY_NIL_NUMBER_CHECK_
                return [self decimalNumberByMultiplyingBy:decimalNumber withBehavior:behaviors];
     };
 }
@@ -364,7 +367,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 - (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))dividingWithBehaviors {
     return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
-               NSDecimalNumber *decimalNumber = (value && [value isKindOfClass:[NSArray class]]) ? ((NSArray *)value).product : value.decimalNumber;
+               _CALCULATE_BY_NIL_NUMBER_CHECK_
                return [self decimalNumberByDividingBy:decimalNumber withBehavior:behaviors];
     };
 }
@@ -480,3 +483,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 }
 
 @end
+
+#undef _CALCULATE_BY_ARRAY_PRODUCT_CHECK_
+#undef _CALCULATE_BY_ARRAY_SUM_CHECK_
+#undef _CALCULATE_BY_NIL_NUMBER_CHECK_

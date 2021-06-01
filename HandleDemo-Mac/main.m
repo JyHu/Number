@@ -49,8 +49,13 @@ int main(int argc, const char * argv[]) {
             numberHandler.mode = NSRoundPlain;
             numberHandler.raiseOnOverflow = YES;
         } exceptionHandler:^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
+            if (error == NSCalculationByNil) {
+                return (@1).decimalNumber;
+            }
             return (@1).decimalNumber;
         }];
+        
+        @"111".multiplying(nil);
         
         for (NSInteger i = 0; i < 10000; i ++) {
             dispatch_async(dispatch_get_global_queue(0, 0), ^{
@@ -114,7 +119,7 @@ int main(int argc, const char * argv[]) {
                 tlog(@"bbb + 5 --> %@", @"bbb".add(@5).stringValue);
                 
                 tlog(@"\n\n对数组做计算");
-                tlog(@"(20 + (10, 30, 400->1)) * (2, 3) / (3, 5) = %@", @"20".add(@[@10, @"30", [AUUDecimalNumber numberWithValue:400 offset:1]]).multiplying(@[@2, @3]).dividing(@[@3, @5]).stringValue);
+                tlog(@"(20 + (10, 30, 400->1)) * (2, 3) / (3, 5) = %@", @"20".add(@[@10, @"30", [AUUDecimalNumber numberWithValue:400 offset:1]].sum).multiplying(@[@2, @3].product).dividing(@[@3, @5].product).stringValue);
                 
                 tlog(@"\n\n对象之间的数值计算");
                 AUUDecimalNumber *dec1 = [AUUDecimalNumber numberWithValue:224 offset:3];
