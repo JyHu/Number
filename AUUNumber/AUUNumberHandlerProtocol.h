@@ -50,8 +50,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  */
 
-#pragma mark - 数字的基础转换
-#pragma mark -
+#pragma mark - 数字的基础转换 -
 
 @protocol AUUNumberHandler <NSObject>
 
@@ -71,8 +70,7 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  */
 
-#pragma mark - 数字的基础运算，包括加减乘除
-#pragma mark -
+#pragma mark - 数字的基础运算，包括加减乘除 -
 
 /**
  加法
@@ -107,9 +105,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 */
 
-#pragma mark - 数字的一些扩展运算
-#pragma mark -
-
+#pragma mark - 数字的一些扩展运算 -
 /**
  n次方
  */
@@ -139,8 +135,7 @@
  */
 @property (retain, nonatomic, readonly) NSDecimalNumber *abs;
 
-#pragma mark - rounding methods
-#pragma mark -
+#pragma mark - rounding methods -
 
 /**
  小数四舍五入，使用四舍五入模式

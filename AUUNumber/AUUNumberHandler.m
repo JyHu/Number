@@ -11,6 +11,13 @@
 
 @interface AUUNumberHandler ()
 
+/// 四舍五入的方式
+@property (assign, nonatomic) NSRoundingMode auu_roundingMode;
+
+/// 保留几位小数
+@property (assign, nonatomic) short auu_scale;
+
+/// 数值格式化的管理字典
 @property (nonatomic, strong) NSMutableDictionary <NSString *, NSNumberFormatter *> *cachedFormatters;
 
 @end
@@ -48,8 +55,7 @@
 	return self;
 }
 
-#pragma mark - NSDecimalNumberBehaviors delegate
-#pragma mark -
+#pragma mark - NSDecimalNumberBehaviors delegate -
 
 - (NSRoundingMode)roundingMode {
 	return self.self.auu_roundingMode;
@@ -64,51 +70,41 @@
         leftOperand:(NSDecimalNumber *)leftOperand
         rightOperand:(NSDecimalNumber *)rightOperand {
 
-	NSString *errorName = @"";
-	switch (error) {
-	case NSCalculationLossOfPrecision:
-		errorName = @"NSCalculationLossOfPrecision";
-		break;
-	case NSCalculationUnderflow:
-		errorName = @"NSCalculationUnderflow";
-		break;
-	case NSCalculationDivideByZero:
-		errorName = @"NSCalculationDivideByZero";
-		break;
-	case NSCalculationOverflow:
-		errorName = @"NSCalculationOverflow";
-		break;
-	case NSCalculationByNil:
-		errorName = @"NSCalculationByNil";
-		break;
-	default:
-		break;
-	}
-
+    /// 如果支持调试，就直接断掉
 	if ([AUUNumberHandler shared].enableDebuging) {
-		NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), errorName, leftOperand, rightOperand);
+		NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), [self nameOfCalculateError:error], leftOperand, rightOperand);
 	}
 
+    /// 如果设置了自定义处理，就使用自定义处理的结果
 	if ([AUUNumberHandler shared].exceptionHandlerDurationOperation) {
 		return [AUUNumberHandler shared].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
 	}
 
-	if ([AUUNumberHandler shared].enableDebuging) {
-		return nil;
-	}
-
-	if (leftOperand && [leftOperand isKindOfClass:[NSNumber class]] && [leftOperand compare:@0] != NSOrderedSame) {
-		return leftOperand;
-	}
-
-	if (rightOperand && [rightOperand isKindOfClass:[NSNumber class]] && [rightOperand compare:@0] != NSOrderedSame) {
-		return rightOperand;
-	}
-
-	return (@1).decimalNumber;
+    /// 根据不同的错误，提供默认的解决方法，避免导致崩溃的发生
+    switch (error) {
+        case NSCalculationLossOfPrecision: return rightOperand;
+        case NSCalculationUnderflow: return NSDecimalNumber.minimumDecimalNumber;
+        case NSCalculationOverflow: return NSDecimalNumber.maximumDecimalNumber;
+        case NSCalculationDivideByZero: return leftOperand;
+        case NSCalculationByNil: return leftOperand;
+        default: return (@1).decimalNumber;
+    }
 }
 
-- (NSNumberFormatter *)formatterWithFractionDigits:(short)fractionDigits numberStyle:(NSNumberFormatterStyle)numberStyle {
+/// 给出可视化的错误名称
+- (NSString *)nameOfCalculateError:(NSCalculationError)error {
+    switch (error) {
+        case NSCalculationLossOfPrecision: return @"NSCalculationLossOfPrecision";
+        case NSCalculationUnderflow: return @"NSCalculationUnderflow";
+        case NSCalculationDivideByZero: return @"NSCalculationDivideByZero";
+        case NSCalculationOverflow: return @"NSCalculationOverflow";
+        case NSCalculationByNil: return @"NSCalculationByNil";
+        default: return @"";
+    }
+}
+
+- (NSNumberFormatter *)formatterWithFractionDigits:(short)fractionDigits
+                                       numberStyle:(NSNumberFormatterStyle)numberStyle {
 	NSNumberFormatter *formatter = nil;
 	dispatch_semaphore_wait(semaphore_lock_t, DISPATCH_TIME_FOREVER);
 	NSString *key = [NSString stringWithFormat:@"%d-%ld", fractionDigits, numberStyle];
@@ -154,8 +150,7 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power)
 	return @(1).multiplyingByPowerOf10(power);
 }
 
-#pragma mark - String
-#pragma mark -
+#pragma mark - String -
 
 @implementation NSString (AUUNumberHandler)
 
@@ -180,8 +175,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 @end
 
-#pragma mark - Number
-#pragma mark -
+#pragma mark - Number -
 
 @implementation NSNumber (AUUNumberHandler)
 
@@ -192,6 +186,8 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 }
 
 @end
+
+#pragma mark - NSArray -
 
 @implementation NSArray (AUUNumberHandler)
 
@@ -217,8 +213,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 
 @end
 
-#pragma mark - Decimal Number
-#pragma mark -
+#pragma mark - Decimal Number -
 
 @implementation NSDecimalNumber (AUUNumberHandler)
 
@@ -253,7 +248,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 		return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {   \
 			       NSDecimalNumber *decimalNumber = value.decimalNumber;                                    \
 			       if (decimalNumber == nil) {                                                              \
-				       decimalNumber = [behaviors exceptionDuringOperation:_cmd error:NSCalculationByNil leftOperand:self rightOperand:decimalNumber]; \
+				       return [behaviors exceptionDuringOperation:_cmd error:NSCalculationByNil leftOperand:self rightOperand:decimalNumber]; \
 			       }                                                                                        \
 			       return [self REALIZE_FUNC:decimalNumber withBehavior:behaviors];                         \
 		};                                                                                                  \
@@ -333,8 +328,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 	return self;
 }
 
-#pragma mark - rounding
-#pragma mark -
+#pragma mark - rounding -
 
 - (NSDecimalNumber *(^)(short))roundingWithScale {
 	return ^NSDecimalNumber *(short scale) {
@@ -348,8 +342,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 	};
 }
 
-#pragma mark - to string
-#pragma mark -
+#pragma mark - to string -
 
 - (NSString *(^)(short))numberStringWithFractionDigits {
 	return ^NSString *(short fractionDigits) {

@@ -72,16 +72,19 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
 /// @return 经过容错处理后的正常数值
 typedef NSDecimalNumber *(^AUUNumberOperationExceptionHandler)(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant);
 
+
+/// 默认的计算错误处理类
+/// 如果在执行计算的时候未指定`behaviors`，会默认的用这个类作为错误数据的处理类，
+/// 针对以下不同的错误提供指定的解决方案
+/// @discussion `NSCalculationLossOfPrecision: return rightOperand;`
+/// @discussion `NSCalculationUnderflow: return NSDecimalNumber.minimumDecimalNumber;`
+/// @discussion `NSCalculationOverflow: return NSDecimalNumber.maximumDecimalNumber;`
+/// @discussion `NSCalculationDivideByZero: return leftOperand;`
+/// @discussion `NSCalculationByNil: return leftOperand;`
 @interface AUUNumberHandler : NSObject <NSDecimalNumberBehaviors>
 
 /// 单例
 + (instancetype)shared;
-
-/// 四舍五入的方式
-@property (assign, nonatomic) NSRoundingMode auu_roundingMode;
-
-/// 保留几位小数
-@property (assign, nonatomic) short auu_scale;
 
 /// 设置是否需要全局的调试方法
 @property (assign, nonatomic) BOOL enableDebuging;
@@ -91,6 +94,7 @@ typedef NSDecimalNumber *(^AUUNumberOperationExceptionHandler)(SEL operation, NS
 @property (copy, nonatomic) id <AUUNumberHandler> (^ numberStringRefactor)(NSString *numberString);
 
 /// 提供给外部使用，用于解决计算错误得问题
+/// 返回值为计算结果
 @property (copy, nonatomic) AUUNumberOperationExceptionHandler exceptionHandlerDurationOperation;
 
 @end
