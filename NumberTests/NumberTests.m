@@ -23,9 +23,9 @@
     // Put teardown code here. This method is called after the invocation of each test method in the class.
 }
 
-- (void)testExample {
-    
 #define NUMBER_EQUAL(N1, N2) XCTAssert([N1 compare:@(N2)] == NSOrderedSame);
+
+- (void)testExample {
         
     [[AUUNumberHandler defaultHandler] setNumberStringRefactor:^id<AUUNumberHandler>(NSString *numberString) {
         NSString *fac = numberString;
@@ -60,21 +60,34 @@
         [AUUDecimal numberWithValue:1 offset:1] /// 自定义的数值对象
     ];
     
+    NSDecimalNumberHandler *sysHandler1 = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundUp scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
+    NSDecimalNumberHandler *sysHandler2 = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundUp scale:3 raiseOnExactness:YES raiseOnOverflow:YES raiseOnUnderflow:YES raiseOnDivideByZero:YES];
+    
     for (id <AUUNumberHandler> testNum in testErrorNumbers) {
         /// 测试 10 + nil
         NUMBER_EQUAL(testNum.add(nil), 10)
+        XCTAssert(testNum.addWithBehaviors(nil, sysHandler1) == nil);
+        XCTAssert(testNum.addWithBehaviors(nil, sysHandler2) == nil);
         
         /// 测试 10 - nil
         NUMBER_EQUAL(testNum.subtracting(nil), 10)
+        XCTAssert(testNum.subtractingWithBehaviors(nil, sysHandler1) == nil);
+        XCTAssert(testNum.subtractingWithBehaviors(nil, sysHandler2) == nil);
         
         /// 测试 10 * nil
         NUMBER_EQUAL(testNum.multiplying(nil), 10)
+        XCTAssert(testNum.multiplyingWithBehaviors(nil, sysHandler1) == nil);
+        XCTAssert(testNum.multiplyingWithBehaviors(nil, sysHandler2) == nil);
         
         /// 测试 10 / nil
         NUMBER_EQUAL(testNum.dividing(nil), 10)
+        XCTAssert(testNum.dividingWithBehaviors(nil, sysHandler1) == nil);
+        XCTAssert(testNum.dividingWithBehaviors(nil, sysHandler2) == nil);
         
         /// 测试 10 / 0
         NUMBER_EQUAL(testNum.dividing(@0), 10)
+        XCTAssert(testNum.dividingWithBehaviors(0, sysHandler1) == nil);
+        XCTAssert(testNum.dividingWithBehaviors(0, sysHandler2) == nil);
         
         /// 测试 10^2
         NUMBER_EQUAL(testNum.square, 100)
@@ -111,6 +124,23 @@
     
     /// 混合运算
     NUMBER_EQUAL(@"20".add(testErrorNumbers.product).dividing(testErrorNumbers.sum), (pow(10, numCount) + 20) / (numCount * 10))
+}
+
+- (void)testBehavior {
+    [[AUUNumberHandler defaultHandler] setExceptionHandlerDurationOperation:^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
+        return (@30).decimalNumber;
+    }];
+    
+    NUMBER_EQUAL((@100).multiplying(nil), 30)
+    
+    AUUNumberHandler *refactorHandler = [AUUNumberHandler instanceWithExceptionHandler:^NSDecimalNumber *(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant) {
+        return (@20).decimalNumber;
+    }];
+    
+    NUMBER_EQUAL((@100).multiplyingWithBehaviors(nil, refactorHandler), 20)
+    
+    NSDecimalNumberHandler *decimalHandler = [NSDecimalNumberHandler decimalNumberHandlerWithRoundingMode:NSRoundUp scale:3 raiseOnExactness:NO raiseOnOverflow:NO raiseOnUnderflow:NO raiseOnDivideByZero:NO];
+    XCTAssert(@"111".multiplyingWithBehaviors(nil, decimalHandler) == nil);
 }
 
 - (void)testPerformanceExample {

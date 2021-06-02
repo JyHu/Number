@@ -44,20 +44,6 @@
     return handler;
 }
 
-+ (instancetype)instanceWithNumberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor {
-    AUUNumberHandler *handler = [[AUUNumberHandler alloc] init];
-    handler.numberStringRefactor = [numberStringRefactor copy];
-    return handler;
-}
-
-+ (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler
-                        numberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor {
-    AUUNumberHandler *handler = [[AUUNumberHandler alloc] init];
-    handler.exceptionHandlerDurationOperation = [exceptionHandler copy];
-    handler.numberStringRefactor = [numberStringRefactor copy];
-    return handler;
-}
-
 - (instancetype)init {
 	if (self = [super init]) {
 		self.auu_roundingMode = NSRoundPlain;
@@ -96,10 +82,11 @@
 	}
 
     /// 如果设置了自定义处理，就使用自定义处理的结果
-	if ([AUUNumberHandler defaultHandler].exceptionHandlerDurationOperation) {
-		return [AUUNumberHandler defaultHandler].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
-	}
-
+    AUUNumberOperationExceptionHandler exceptionHandler = self.exceptionHandlerDurationOperation ?: [AUUNumberHandler defaultHandler].exceptionHandlerDurationOperation;
+	if (exceptionHandler) {
+		return exceptionHandler(operation, error, leftOperand, rightOperand);
+    }
+    
     /// 根据不同的错误，提供默认的解决方法，避免导致崩溃的发生
     switch (error) {
         case NSCalculationLossOfPrecision: return rightOperand;

@@ -93,7 +93,8 @@ typedef id <AUUNumberHandler> (^AUUNumberStringRefactor)(NSString *numberString)
 @property (assign, nonatomic) BOOL enableDebuging;
 
 /// 字符串转数字的特殊处理
-/// 比如有的字符串是12'23处理成数值会是12.23，或者 0x0A会处理成 10 等登
+/// 比如有的字符串是12'23处理成数值会是12.23，或者 0x0A会处理成 10 等等
+/// @warning 只针对defaultHandler有效
 @property (copy, nonatomic) AUUNumberStringRefactor numberStringRefactor;
 
 /// 提供给外部使用，用于解决计算错误得问题
@@ -102,8 +103,5 @@ typedef id <AUUNumberHandler> (^AUUNumberStringRefactor)(NSString *numberString)
 
 /// 临时计算使用快速创建实例对象的方法
 + (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler;
-+ (instancetype)instanceWithNumberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor;
-+ (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler
-                        numberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor;
 
 @end
