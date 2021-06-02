@@ -27,7 +27,7 @@ int main(int argc, const char * argv[]) {
         n = n.multiplying(nil);
         n = n.dividing(nil);
         
-        AUUNumberHandler *handler = [AUUNumberHandler shared];
+        AUUNumberHandler *handler = [AUUNumberHandler defaultHandler];
         
         [handler setNumberStringRefactor:^id<AUUNumberHandler>(NSString *numberString) {
             NSString *fac = numberString;

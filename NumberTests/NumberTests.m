@@ -27,7 +27,7 @@
     
 #define NUMBER_EQUAL(N1, N2) XCTAssert([N1 compare:@(N2)] == NSOrderedSame);
         
-    [[AUUNumberHandler shared] setNumberStringRefactor:^id<AUUNumberHandler>(NSString *numberString) {
+    [[AUUNumberHandler defaultHandler] setNumberStringRefactor:^id<AUUNumberHandler>(NSString *numberString) {
         NSString *fac = numberString;
         if ([fac containsString:@","]) {
             fac = [fac stringByReplacingOccurrencesOfString:@"," withString:@""];
@@ -37,6 +37,7 @@
             fac = [fac stringByReplacingOccurrencesOfString:@"'" withString:@"."];
         }
         
+        /// 默认写死了，就不写16 -> 10的算法了
         if ([numberString containsString:@"0xA"]) {
             return @10;
         }

@@ -72,6 +72,8 @@ NSNumber * AUUMultiplyingByPowerOf10(NSInteger power);
 /// @return 经过容错处理后的正常数值
 typedef NSDecimalNumber *(^AUUNumberOperationExceptionHandler)(SEL operation, NSCalculationError error, NSDecimalNumber *leftOperand, NSDecimalNumber *rightOperant);
 
+/// 处理字符串类型数值转换的block
+typedef id <AUUNumberHandler> (^AUUNumberStringRefactor)(NSString *numberString);
 
 /// 默认的计算错误处理类
 /// 如果在执行计算的时候未指定`behaviors`，会默认的用这个类作为错误数据的处理类，
@@ -84,17 +86,24 @@ typedef NSDecimalNumber *(^AUUNumberOperationExceptionHandler)(SEL operation, NS
 @interface AUUNumberHandler : NSObject <NSDecimalNumberBehaviors>
 
 /// 单例
-+ (instancetype)shared;
++ (instancetype)defaultHandler;
 
 /// 设置是否需要全局的调试方法
+/// @warning 只针对defaultHandler有效
 @property (assign, nonatomic) BOOL enableDebuging;
 
 /// 字符串转数字的特殊处理
-/// 比如有的字符串是12'23处理成数值会是12.23
-@property (copy, nonatomic) id <AUUNumberHandler> (^ numberStringRefactor)(NSString *numberString);
+/// 比如有的字符串是12'23处理成数值会是12.23，或者 0x0A会处理成 10 等登
+@property (copy, nonatomic) AUUNumberStringRefactor numberStringRefactor;
 
 /// 提供给外部使用，用于解决计算错误得问题
 /// 返回值为计算结果
 @property (copy, nonatomic) AUUNumberOperationExceptionHandler exceptionHandlerDurationOperation;
+
+/// 临时计算使用快速创建实例对象的方法
++ (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler;
++ (instancetype)instanceWithNumberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor;
++ (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler
+                        numberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor;
 
 @end

@@ -27,19 +27,39 @@
 	dispatch_semaphore_t semaphore_lock_t;
 }
 
-+ (instancetype)shared {
++ (instancetype)defaultHandler {
 	static AUUNumberHandler *handler;
 	static dispatch_once_t onceToken;
 	dispatch_once(&onceToken, ^{
 		handler = [[AUUNumberHandler alloc] init];
+        handler->semaphore_lock_t = dispatch_semaphore_create(1);
+        handler.cachedFormatters = [[NSMutableDictionary alloc] init];
 	});
 	return handler;
 }
 
++ (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler {
+    AUUNumberHandler *handler = [[AUUNumberHandler alloc] init];
+    handler.exceptionHandlerDurationOperation = [exceptionHandler copy];
+    return handler;
+}
+
++ (instancetype)instanceWithNumberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor {
+    AUUNumberHandler *handler = [[AUUNumberHandler alloc] init];
+    handler.numberStringRefactor = [numberStringRefactor copy];
+    return handler;
+}
+
++ (instancetype)instanceWithExceptionHandler:(AUUNumberOperationExceptionHandler)exceptionHandler
+                        numberStringRefactor:(AUUNumberStringRefactor)numberStringRefactor {
+    AUUNumberHandler *handler = [[AUUNumberHandler alloc] init];
+    handler.exceptionHandlerDurationOperation = [exceptionHandler copy];
+    handler.numberStringRefactor = [numberStringRefactor copy];
+    return handler;
+}
+
 - (instancetype)init {
 	if (self = [super init]) {
-		self->semaphore_lock_t = dispatch_semaphore_create(1);
-		self.cachedFormatters = [[NSMutableDictionary alloc] init];
 		self.auu_roundingMode = NSRoundPlain;
 		self.auu_scale = [NSDecimalNumberHandler defaultDecimalNumberHandler].scale;
 	}
@@ -71,13 +91,13 @@
         rightOperand:(NSDecimalNumber *)rightOperand {
 
     /// 如果支持调试，就直接断掉
-	if ([AUUNumberHandler shared].enableDebuging) {
+	if ([AUUNumberHandler defaultHandler].enableDebuging) {
 		NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), [self nameOfCalculateError:error], leftOperand, rightOperand);
 	}
 
     /// 如果设置了自定义处理，就使用自定义处理的结果
-	if ([AUUNumberHandler shared].exceptionHandlerDurationOperation) {
-		return [AUUNumberHandler shared].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
+	if ([AUUNumberHandler defaultHandler].exceptionHandlerDurationOperation) {
+		return [AUUNumberHandler defaultHandler].exceptionHandlerDurationOperation(operation, error, leftOperand, rightOperand);
 	}
 
     /// 根据不同的错误，提供默认的解决方法，避免导致崩溃的发生
@@ -122,8 +142,8 @@
 }
 
 + (id <AUUNumberHandler>)safeNumberStringRefactor:(NSString *)numberString {
-	if ([AUUNumberHandler shared].numberStringRefactor) {
-		return [AUUNumberHandler shared].numberStringRefactor(numberString);
+	if ([AUUNumberHandler defaultHandler].numberStringRefactor) {
+		return [AUUNumberHandler defaultHandler].numberStringRefactor(numberString);
 	}
 	return (id <AUUNumberHandler>)numberString;
 }
@@ -227,7 +247,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 		return safeNumber;
 	}
 
-	if ([AUUNumberHandler shared].enableDebuging) {
+	if ([AUUNumberHandler defaultHandler].enableDebuging) {
 		NSAssert(0, @"非法的操作数");
 	}
 
@@ -241,7 +261,7 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 #define _CALCULATE_FUNCTION_(CALCULATE_FUNC, REALIZE_FUNC)                                 \
 	- (NSDecimalNumber *(^)(id <AUUNumberHandler>))CALCULATE_FUNC {                   \
 		return ^NSDecimalNumber *(id <AUUNumberHandler> value) {            \
-			       return self.CALCULATE_FUNC ## WithBehaviors(value, [AUUNumberHandler shared]); \
+			       return self.CALCULATE_FUNC ## WithBehaviors(value, [AUUNumberHandler defaultHandler]); \
 		};                                                                  \
 	}                                                                       \
 	- (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))CALCULATE_FUNC ## WithBehaviors {      \
@@ -267,7 +287,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(NSUInteger))raisingToPower {
 	return ^NSDecimalNumber *(NSUInteger power) {
-		       return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler shared]);
+		       return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler defaultHandler]);
 	};
 }
 
@@ -282,7 +302,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(short))multiplyingByPowerOf10 {
 	return ^NSDecimalNumber *(short power) {
-		       return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler shared]);
+		       return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler defaultHandler]);
 	};
 }
 
@@ -296,7 +316,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 //=================================   平方   ================================
 
 - (NSDecimalNumber *)square {
-	return self.squareWithBehaviors([AUUNumberHandler shared]);
+	return self.squareWithBehaviors([AUUNumberHandler defaultHandler]);
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))squareWithBehaviors {
@@ -309,7 +329,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 //=================================   立方   ===============================
 
 - (NSDecimalNumber *)cube {
-	return self.cubeWithBehaviors([AUUNumberHandler shared]);
+	return self.cubeWithBehaviors([AUUNumberHandler defaultHandler]);
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))cubeWithBehaviors {
@@ -358,7 +378,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSString *(^)(short, NSNumberFormatterStyle))numberStringWith {
 	return ^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) {
-		       return self.numberStringWithFormatter([[AUUNumberHandler shared] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
+		       return self.numberStringWithFormatter([[AUUNumberHandler defaultHandler] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
 	};
 }
 
