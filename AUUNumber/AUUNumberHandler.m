@@ -83,8 +83,14 @@
 
     /// 如果设置了自定义处理，就使用自定义处理的结果
     AUUNumberOperationExceptionHandler exceptionHandler = self.exceptionHandlerDurationOperation ?: [AUUNumberHandler defaultHandler].exceptionHandlerDurationOperation;
+    
 	if (exceptionHandler) {
-		return exceptionHandler(operation, error, leftOperand, rightOperand);
+		NSDecimalNumber *correctNumber = exceptionHandler(operation, error, leftOperand, rightOperand);
+        /// 只有自定义处理的方法返回的数值有效的时候，才会返回给计算过程，
+        /// 否则还会继续走默认的处理方法，尽量避免数值出错导致的额系统崩溃问题发生
+        if (correctNumber && [correctNumber isKindOfClass:[NSDecimalNumber class]]) {
+            return correctNumber;
+        }
     }
     
     /// 根据不同的错误，提供默认的解决方法，避免导致崩溃的发生
