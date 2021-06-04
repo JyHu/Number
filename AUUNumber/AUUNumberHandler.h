@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import <AUUNumber/AUUNumberHandlerProtocol.h>
+#import "AUUNumberHandlerProtocol.h"
 
 #define NSCalculationByNil 100
 
