@@ -128,6 +128,7 @@
 		formatter.minimumFractionDigits = fractionDigits;
 		formatter.maximumFractionDigits = fractionDigits;
 		formatter.minimumIntegerDigits = 1;
+        formatter.decimalSeparator = @".";
 		[self.cachedFormatters setObject:formatter forKey:key];
 	}
 	dispatch_semaphore_signal(semaphore_lock_t);
