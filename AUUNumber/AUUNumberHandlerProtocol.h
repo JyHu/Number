@@ -162,3 +162,4 @@
 @property (copy, nonatomic, readonly) NSString * (^ numberStringWith)(short fractionDigits, NSNumberFormatterStyle numberFormatter);
 
 @end
+
