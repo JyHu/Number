@@ -50,6 +50,8 @@
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
  */
 
+NS_ASSUME_NONNULL_BEGIN
+
 #pragma mark - 数字的基础转换 -
 
 @protocol AUUNumberHandler <NSObject>
@@ -59,7 +61,7 @@
 /**
  转换成数值对象
  */
-@property (retain, nonatomic, readonly) NSDecimalNumber *decimalNumber;
+@property (retain, nonatomic, readonly, nullable) NSDecimalNumber *decimalNumber;
 
 /*
  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -75,26 +77,26 @@
 /**
  加法
  */
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ add)(id <AUUNumberHandler> value);
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ addWithBehaviors)(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^add)(_Nullable id <AUUNumberHandler> value);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^addWithBehaviors)(_Nullable id <AUUNumberHandler> value, _Nullable id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  减法
  */
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ subtracting)(id <AUUNumberHandler> value);
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ subtractingWithBehaviors)(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly, nullable) NSDecimalNumber * _Nullable (^subtracting)(_Nullable id <AUUNumberHandler> value);
+@property (copy, nonatomic, readonly, nullable) NSDecimalNumber * _Nullable (^subtractingWithBehaviors)(_Nullable id <AUUNumberHandler> value, _Nonnull id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  乘法
  */
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ multiplying)(id <AUUNumberHandler> value);
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ multiplyingWithBehaviors)(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly, nullable) NSDecimalNumber * _Nullable (^multiplying)(_Nullable id <AUUNumberHandler> value);
+@property (copy, nonatomic, readonly, nullable) NSDecimalNumber * _Nullable (^multiplyingWithBehaviors)( _Nullable id <AUUNumberHandler> value, _Nonnull id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  除法
  */
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ dividing)(id <AUUNumberHandler> value);
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ dividingWithBehaviors)(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly, nullable) NSDecimalNumber * _Nullable (^dividing)(_Nullable id <AUUNumberHandler> value);
+@property (copy, nonatomic, readonly, nullable) NSDecimalNumber * _Nullable (^dividingWithBehaviors)(_Nullable id <AUUNumberHandler> value, _Nonnull id <NSDecimalNumberBehaviors> behaviors);
 
 /*
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -109,26 +111,26 @@
 /**
  n次方
  */
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ raisingToPower)(NSUInteger power);
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ raisingToPowerWithBehaviors)(NSUInteger power, id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^ _Nullable raisingToPower)(NSUInteger power);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^ _Nullable raisingToPowerWithBehaviors)(NSUInteger power, _Nonnull id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  乘以10的n次方
  */
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ multiplyingByPowerOf10)(short power);
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ multiplyingByPowerOf10WithBehaviors)(short power, id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^ _Nullable multiplyingByPowerOf10)(short power);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^ _Nullable multiplyingByPowerOf10WithBehaviors)(short power, id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  平方
  */
 @property (copy, nonatomic, readonly) NSDecimalNumber *square;
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ squareWithBehaviors)(id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^ _Nullable squareWithBehaviors)(id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  立方
  */
 @property (copy, nonatomic, readonly) NSDecimalNumber *cube;
-@property (copy, nonatomic, readonly) NSDecimalNumber * (^ cubeWithBehaviors)(id <NSDecimalNumberBehaviors> behaviors);
+@property (copy, nonatomic, readonly) NSDecimalNumber * _Nullable (^ _Nullable cubeWithBehaviors)(id <NSDecimalNumberBehaviors> behaviors);
 
 /**
  绝对值
@@ -162,3 +164,5 @@
 @property (copy, nonatomic, readonly) NSString * (^ numberStringWith)(short fractionDigits, NSNumberFormatterStyle numberFormatter);
 
 @end
+
+NS_ASSUME_NONNULL_END

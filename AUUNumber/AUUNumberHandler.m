@@ -22,8 +22,7 @@
 
 @end
 
-@implementation AUUNumberHandler
-{
+@implementation AUUNumberHandler {
 	dispatch_semaphore_t semaphore_lock_t;
 }
 
@@ -72,13 +71,16 @@
 }
 
 - (NSDecimalNumber *)exceptionDuringOperation:(SEL)operation
-        error:(NSCalculationError)error
-        leftOperand:(NSDecimalNumber *)leftOperand
-        rightOperand:(NSDecimalNumber *)rightOperand {
+                                        error:(NSCalculationError)error
+                                  leftOperand:(NSDecimalNumber *)leftOperand
+                                 rightOperand:(NSDecimalNumber *)rightOperand {
 
     /// 如果支持调试，就直接断掉
 	if ([AUUNumberHandler defaultHandler].enableDebuging) {
-		NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@", NSStringFromSelector(operation), [self nameOfCalculateError:error], leftOperand, rightOperand);
+		NSAssert4(0, @"\nException Operation:%@\nError:%@\nLeft Operand:%@\nRight Operand:%@",
+                  NSStringFromSelector(operation),
+                  [self nameOfCalculateError:error],
+                  leftOperand, rightOperand);
 	}
 
     /// 如果设置了自定义处理，就使用自定义处理的结果
@@ -144,23 +146,19 @@
 
 @end
 
-id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number)
-{
+id <AUUNumberHandler> AUUSafeNumber(id <AUUNumberHandler> number) {
 	return [NSDecimalNumber safeNumberWithNumberObject:number];
 }
 
-id <AUUNumberHandler> AUUMaxNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2)
-{
+id <AUUNumberHandler> AUUMaxNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2) {
 	return (number1 && number2) ? ([number1.decimalNumber compare:number2.decimalNumber] == NSOrderedDescending ? number1 : number2) : nil;
 }
 
-id <AUUNumberHandler> AUUMinNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2)
-{
+id <AUUNumberHandler> AUUMinNumber(id <AUUNumberHandler> number1, id <AUUNumberHandler> number2) {
 	return (number1 && number2) ? ([number1.decimalNumber compare:number2.decimalNumber] == NSOrderedAscending ? number1 : number2) : nil;
 }
 
-NSNumber * AUUMultiplyingByPowerOf10(NSInteger power)
-{
+NSNumber * AUUMultiplyingByPowerOf10(NSInteger power) {
 	return @(1).multiplyingByPowerOf10(power);
 }
 
@@ -255,23 +253,41 @@ kAUU_NUMBER_HANDLER_IMPLEMENTATION_QUICK_CREATOR
 #define _CALCULATE_FUNCTION_(CALCULATE_FUNC, REALIZE_FUNC)                                 \
 	- (NSDecimalNumber *(^)(id <AUUNumberHandler>))CALCULATE_FUNC {                   \
 		return ^NSDecimalNumber *(id <AUUNumberHandler> value) {            \
-			       return self.CALCULATE_FUNC ## WithBehaviors(value, [AUUNumberHandler defaultHandler]); \
+            return self.CALCULATE_FUNC ## WithBehaviors(value, [AUUNumberHandler defaultHandler]); \
 		};                                                                  \
 	}                                                                       \
 	- (NSDecimalNumber *(^)(id <AUUNumberHandler>, id<NSDecimalNumberBehaviors>))CALCULATE_FUNC ## WithBehaviors {      \
 		return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {   \
-			       NSDecimalNumber *decimalNumber = value.decimalNumber;                                    \
-			       if (decimalNumber == nil) {                                                              \
-				       return [behaviors exceptionDuringOperation:_cmd error:NSCalculationByNil leftOperand:self rightOperand:decimalNumber]; \
-			       }                                                                                        \
-			       return [self REALIZE_FUNC:decimalNumber withBehavior:behaviors];                         \
+            NSDecimalNumber *decimalNumber = value.decimalNumber;                                    \
+            if (decimalNumber == nil) {                                                              \
+                return [behaviors exceptionDuringOperation:_cmd error:NSCalculationByNil leftOperand:self rightOperand:decimalNumber]; \
+            }                                                                                        \
+            return [self REALIZE_FUNC:decimalNumber withBehavior:behaviors];                         \
 		};                                                                                                  \
 	}
+
+- (NSDecimalNumber *(^)(id<AUUNumberHandler>))add {
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value) {
+        if (value == nil) { return nil; }
+        return self.addWithBehaviors(value, AUUNumberHandler.defaultHandler);
+    };
+}
+
+- (NSDecimalNumber *(^)(id<AUUNumberHandler>, id<NSDecimalNumberBehaviors>))addWithBehaviors {
+    return ^NSDecimalNumber *(id <AUUNumberHandler> value, id <NSDecimalNumberBehaviors> behaviors) {
+        NSDecimalNumber *decimalNumber = value.decimalNumber;
+        if (decimalNumber == nil) {
+            return [behaviors exceptionDuringOperation:_cmd error:NSCalculationByNil leftOperand:self rightOperand:decimalNumber];
+        }
+        
+        return [self decimalNumberByAdding:decimalNumber withBehavior:behaviors];
+    };
+}
 
 //================================================================================
 //================================   加 减 乘 除   =================================
 
-_CALCULATE_FUNCTION_(add, decimalNumberByAdding)                /// 加法
+//_CALCULATE_FUNCTION_(add, decimalNumberByAdding)                /// 加法
 _CALCULATE_FUNCTION_(subtracting, decimalNumberBySubtracting)   /// 减法
 _CALCULATE_FUNCTION_(multiplying, decimalNumberByMultiplyingBy) /// 乘法
 _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
@@ -281,13 +297,13 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(NSUInteger))raisingToPower {
 	return ^NSDecimalNumber *(NSUInteger power) {
-		       return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler defaultHandler]);
+        return self.raisingToPowerWithBehaviors(power, [AUUNumberHandler defaultHandler]);
 	};
 }
 
 - (NSDecimalNumber *(^)(NSUInteger, id<NSDecimalNumberBehaviors>))raisingToPowerWithBehaviors {
 	return ^NSDecimalNumber *(NSUInteger power, id <NSDecimalNumberBehaviors> behaviors) {
-		       return [self decimalNumberByRaisingToPower:power withBehavior:behaviors];
+        return [self decimalNumberByRaisingToPower:power withBehavior:behaviors];
 	};
 }
 
@@ -296,13 +312,13 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(short))multiplyingByPowerOf10 {
 	return ^NSDecimalNumber *(short power) {
-		       return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler defaultHandler]);
+        return self.multiplyingByPowerOf10WithBehaviors(power, [AUUNumberHandler defaultHandler]);
 	};
 }
 
 - (NSDecimalNumber *(^)(short, id<NSDecimalNumberBehaviors>))multiplyingByPowerOf10WithBehaviors {
 	return ^NSDecimalNumber *(short power, id <NSDecimalNumberBehaviors> behaviors) {
-		       return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:behaviors];
+        return [self decimalNumberByMultiplyingByPowerOf10:power withBehavior:behaviors];
 	};
 }
 
@@ -315,7 +331,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))squareWithBehaviors {
 	return ^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
-		       return self.raisingToPowerWithBehaviors(2, behaviors);
+        return self.raisingToPowerWithBehaviors(2, behaviors);
 	};
 }
 
@@ -328,7 +344,7 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))cubeWithBehaviors {
 	return ^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
-		       return self.raisingToPowerWithBehaviors(3, behaviors);
+        return self.raisingToPowerWithBehaviors(3, behaviors);
 	};
 }
 
@@ -346,13 +362,13 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSDecimalNumber *(^)(short))roundingWithScale {
 	return ^NSDecimalNumber *(short scale) {
-		       return self.roundingWithBehaviors([[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:scale]);
+        return self.roundingWithBehaviors([[AUUNumberHandler alloc] initHandlerWithRoundingMode:NSRoundPlain scale:scale]);
 	};
 }
 
 - (NSDecimalNumber *(^)(id<NSDecimalNumberBehaviors>))roundingWithBehaviors {
 	return ^NSDecimalNumber *(id <NSDecimalNumberBehaviors> behaviors) {
-		       return [self decimalNumberByRoundingAccordingToBehavior:behaviors];
+        return [self decimalNumberByRoundingAccordingToBehavior:behaviors];
 	};
 }
 
@@ -360,25 +376,25 @@ _CALCULATE_FUNCTION_(dividing, decimalNumberByDividingBy)       /// 除法
 
 - (NSString *(^)(short))numberStringWithFractionDigits {
 	return ^NSString *(short fractionDigits) {
-		       return self.numberStringWith(fractionDigits, NSNumberFormatterNoStyle);
+        return self.numberStringWith(fractionDigits, NSNumberFormatterNoStyle);
 	};
 }
 
 - (NSString *(^)(short))decimalStringWithFractionDigits {
 	return ^NSString *(short fractionDigits) {
-		       return self.numberStringWith(fractionDigits, NSNumberFormatterDecimalStyle);
+        return self.numberStringWith(fractionDigits, NSNumberFormatterDecimalStyle);
 	};
 }
 
 - (NSString *(^)(short, NSNumberFormatterStyle))numberStringWith {
 	return ^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) {
-		       return self.numberStringWithFormatter([[AUUNumberHandler defaultHandler] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
+        return self.numberStringWithFormatter([[AUUNumberHandler defaultHandler] formatterWithFractionDigits:fractionDigits numberStyle:numberStyle]);
 	};
 }
 
 - (NSString *(^)(NSNumberFormatter *))numberStringWithFormatter {
 	return ^NSString *(NSNumberFormatter *formatter) {
-		       return formatter ? [formatter stringFromNumber:self] : self.stringValue;
+        return formatter ? [formatter stringFromNumber:self] : self.stringValue;
 	};
 }
 

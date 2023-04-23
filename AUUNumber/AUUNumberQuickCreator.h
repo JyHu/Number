@@ -46,21 +46,21 @@
 #define __DecimalHandle__(type, func)                   \
     - (NSDecimalNumber * (^)(type))func {               \
         return ^NSDecimalNumber *(type value) {         \
-                   return self.decimalNumber.func(value);   \
+            return self.decimalNumber.func(value);      \
         };                                              \
     }
 
 #define __DecimalHandleWithBehaviors__(type, func)                                      \
     - (NSDecimalNumber * (^)(type, id<NSDecimalNumberBehaviors>))func {                 \
         return ^NSDecimalNumber *(type value, id <NSDecimalNumberBehaviors> behaviors) {\
-                   return self.decimalNumber.func(value, behaviors);                    \
+            return self.decimalNumber.func(value, behaviors);                           \
         };                                                                              \
     }
 
 #define __DecimalString__(type, func)                       \
     - (NSString * (^)(type))func {                          \
         return ^NSString *(type value) {                    \
-                   return self.decimalNumber.func(value);   \
+            return self.decimalNumber.func(value);          \
         };                                                  \
     }
 
@@ -97,14 +97,14 @@
     /*          舍入          */                                                         \
     __DecimalHandle__(short, roundingWithScale)                                         \
     __DecimalHandle__(id <NSDecimalNumberBehaviors>, roundingWithBehaviors)             \
-    /*        转字符串        */                                                          \
+    /*        转字符串        */                                                         \
     __DecimalString__(short, numberStringWithFractionDigits)                            \
     __DecimalString__(short, decimalStringWithFractionDigits)                           \
     __DecimalString__(NSNumberFormatter *, numberStringWithFormatter)                   \
-    - (NSString * (^)(short, NSNumberFormatterStyle))numberStringWith {                  \
-        return ^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) { \
-                   return self.decimalNumber.numberStringWith(fractionDigits, numberStyle);    \
-        };                                                                        \
+    - (NSString * (^)(short, NSNumberFormatterStyle))numberStringWith {                 \
+        return ^NSString *(short fractionDigits, NSNumberFormatterStyle numberStyle) {  \
+            return self.decimalNumber.numberStringWith(fractionDigits, numberStyle);    \
+        };                                                                              \
     }
 
 #endif /* AUUNumberQuickCreator_h */

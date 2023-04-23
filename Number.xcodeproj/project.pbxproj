@@ -18,10 +18,18 @@
 		66F4D2C526672CBF00554B62 /* NumberTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 66F4D2C426672CBF00554B62 /* NumberTests.m */; };
 		66F4D2C726672CBF00554B62 /* AUUNumber.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C0AB1AD1EED2A7C00C7E4BB /* AUUNumber.framework */; };
 		66F4D2D226672F0800554B62 /* AUUDecimal.m in Sources */ = {isa = PBXBuildFile; fileRef = 66F4D2D126672F0800554B62 /* AUUDecimal.m */; };
+		C8F26A5928E3442D002D9011 /* AUUNumber.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C0AB1AD1EED2A7C00C7E4BB /* AUUNumber.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		66F4D2C826672CBF00554B62 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1C0AB1A21EED295C00C7E4BB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 1C0AB1AC1EED2A7C00C7E4BB;
+			remoteInfo = AUUNumber;
+		};
+		C8F26A5A28E3442D002D9011 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 1C0AB1A21EED295C00C7E4BB /* Project object */;
 			proxyType = 1;
@@ -48,6 +56,7 @@
 		66F4D2C626672CBF00554B62 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		66F4D2D026672F0800554B62 /* AUUDecimal.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AUUDecimal.h; sourceTree = "<group>"; };
 		66F4D2D126672F0800554B62 /* AUUDecimal.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AUUDecimal.m; sourceTree = "<group>"; };
+		C8F26A5528E3442D002D9011 /* AUUNumberTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = AUUNumberTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +72,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				66F4D2C726672CBF00554B62 /* AUUNumber.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8F26A5228E3442D002D9011 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				C8F26A5928E3442D002D9011 /* AUUNumber.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +103,7 @@
 			children = (
 				1C0AB1AD1EED2A7C00C7E4BB /* AUUNumber.framework */,
 				66F4D2C226672CBF00554B62 /* NumberTests.xctest */,
+				C8F26A5528E3442D002D9011 /* AUUNumberTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -170,12 +188,31 @@
 			productReference = 66F4D2C226672CBF00554B62 /* NumberTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		C8F26A5428E3442D002D9011 /* AUUNumberTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C8F26A5E28E3442D002D9011 /* Build configuration list for PBXNativeTarget "AUUNumberTests" */;
+			buildPhases = (
+				C8F26A5128E3442D002D9011 /* Sources */,
+				C8F26A5228E3442D002D9011 /* Frameworks */,
+				C8F26A5328E3442D002D9011 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C8F26A5B28E3442D002D9011 /* PBXTargetDependency */,
+			);
+			name = AUUNumberTests;
+			productName = AUUNumberTests;
+			productReference = C8F26A5528E3442D002D9011 /* AUUNumberTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
 		1C0AB1A21EED295C00C7E4BB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
+				LastSwiftUpdateCheck = 1320;
 				LastUpgradeCheck = 1240;
 				TargetAttributes = {
 					1C0AB1AC1EED2A7C00C7E4BB = {
@@ -185,6 +222,11 @@
 					};
 					66F4D2C126672CBF00554B62 = {
 						CreatedOnToolsVersion = 12.4;
+						DevelopmentTeam = 3JFS89BVXB;
+						ProvisioningStyle = Automatic;
+					};
+					C8F26A5428E3442D002D9011 = {
+						CreatedOnToolsVersion = 13.2.1;
 						DevelopmentTeam = 3JFS89BVXB;
 						ProvisioningStyle = Automatic;
 					};
@@ -205,6 +247,7 @@
 			targets = (
 				1C0AB1AC1EED2A7C00C7E4BB /* AUUNumber */,
 				66F4D2C126672CBF00554B62 /* NumberTests */,
+				C8F26A5428E3442D002D9011 /* AUUNumberTests */,
 			);
 		};
 /* End PBXProject section */
@@ -219,6 +262,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		66F4D2C026672CBF00554B62 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C8F26A5328E3442D002D9011 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -246,6 +296,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		C8F26A5128E3442D002D9011 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -253,6 +310,11 @@
 			isa = PBXTargetDependency;
 			target = 1C0AB1AC1EED2A7C00C7E4BB /* AUUNumber */;
 			targetProxy = 66F4D2C826672CBF00554B62 /* PBXContainerItemProxy */;
+		};
+		C8F26A5B28E3442D002D9011 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 1C0AB1AC1EED2A7C00C7E4BB /* AUUNumber */;
+			targetProxy = C8F26A5A28E3442D002D9011 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -524,6 +586,88 @@
 			};
 			name = Release;
 		};
+		C8F26A5C28E3442D002D9011 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 3JFS89BVXB;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.auu.AUUNumberTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		C8F26A5D28E3442D002D9011 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 3JFS89BVXB;
+				ENABLE_NS_ASSERTIONS = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GENERATE_INFOPLIST_FILE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 12.1;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.auu.AUUNumberTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -550,6 +694,15 @@
 			buildConfigurations = (
 				66F4D2CB26672CBF00554B62 /* Debug */,
 				66F4D2CC26672CBF00554B62 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C8F26A5E28E3442D002D9011 /* Build configuration list for PBXNativeTarget "AUUNumberTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C8F26A5C28E3442D002D9011 /* Debug */,
+				C8F26A5D28E3442D002D9011 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
